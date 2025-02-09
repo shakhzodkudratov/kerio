@@ -33,7 +33,7 @@
         devShells.default = import ./shell.nix {inherit pkgs;};
 
         # Output package
-        packages = pkgs.callPackage ./. {inherit pkgs;};
+        packages.default = pkgs.callPackage ./. {inherit pkgs;};
       }
     )
     // {

@@ -1,8 +1,4 @@
-{
-  autoPatchelfHook,
-  pkgs ? import <nixpkgs> {},
-  ...
-}: let
+{pkgs ? import <nixpkgs> {}, ...}: let
   lib = pkgs.lib;
 in
   pkgs.stdenv.mkDerivation rec {
@@ -11,17 +7,18 @@ in
 
     src = pkgs.fetchurl {
       url = "https://cdn.kerio.com/dwn/control/control-${version}/${pname}-${version}-linux-amd64.deb";
-      hash = "sha256-rQTGjCr5koU06nafK/LWqneEdC0kZYYWwTmUB7MXg/g=";
+      hash = "sha256-rU5tinj1FN2z8u7w7GEV9oa21v+eeo8OQXXWnyZw9ys=";
     };
 
     nativeBuildInputs = with pkgs; [
-      autoPatchelfHook
+      # autoPatchelfHook
       dpkg
     ];
 
+    unpackPhase = "true";
+
     buildInputs = with pkgs; [
       libgcc
-      libstdcxx5
       stdenv.cc.cc.lib
 
       curl
@@ -34,7 +31,7 @@ in
     ];
 
     installPhase = ''
-      mkdir -p $out
+      mkdir -p $out $out/bin
       dpkg -x $src $out
     '';
 
@@ -43,5 +40,19 @@ in
       description = "Kerio Control VPN client for corporate networks.";
       licencse = lib.licenses.unfree;
       platforms = with platforms; linux ++ darwin;
+      maintainers = [
+        {
+          name = "Sokhibjon Orzikulov";
+          email = "sakhib@orzklv.uz";
+          handle = "orzklv";
+          github = "orzklv";
+          githubId = 54666588;
+          keys = [
+            {
+              fingerprint = "00D2 7BC6 8707 0683 FBB9  137C 3C35 D3AF 0DA1 D6A8";
+            }
+          ];
+        }
+      ];
     };
   }
