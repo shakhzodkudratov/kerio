@@ -13,8 +13,8 @@ pkgs.stdenv.mkDerivation {
   name = "kerio-dev";
 
   nativeBuildInputs = with pkgs; [
-    git
     nixd
+    shfmt
     statix
     deadnix
     alejandra

@@ -1,33 +1,43 @@
 {
   description = "Kerio Control VPN Client (Linux x86_64 only)";
 
-  # Use latest stable channel: 24.11
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+  inputs = {
+    # Too old to work with most libraries
+    # nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
 
-  outputs =
-    { self, nixpkgs, ... } @ inputs:
-    let
-      lib = nixpkgs.lib;
+    # Perfect!
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
-      systems = [
-        "x86_64-linux"
-        "aarch64-darwin"
-      ];
+    # The flake-utils library
+    flake-utils.url = "github:numtide/flake-utils";
+  };
 
-      forEachSystem = f: lib.genAttrs systems (system: f system);
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-    in
-    {
-      # nixosModules.kerio-control-vpnclient = import ./module.nix self;
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    ...
+  }:
+    flake-utils.lib.eachSystem [
+      "x86_64-linux" # For production
+      "aarch64-darwin" # For maintainer's development
+    ]
+    (
+      system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        # Nix script formatter
+        formatter = pkgs.alejandra;
 
-      packages = forAllSystems (system:
-        let
-          pkgs = import nixpkgs {
-            inherit system;
-          };
-        in
-        {
-          default = pkgs.callPackage ./. { };
-        });
+        # Development environment
+        devShells.default = import ./shell.nix {inherit pkgs;};
+
+        # Output package
+        packages = pkgs.callPackage ./. {inherit pkgs;};
+      }
+    )
+    // {
+      # Overlay module
+      # nixosModules.e-imzo = import ./module.nix self;
     };
 }
