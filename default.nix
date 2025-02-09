@@ -49,7 +49,7 @@ in
       homepage = "http://www.kerio.com/control";
       description = "Kerio Control VPN client for corporate networks.";
       licencse = lib.licenses.unfree;
-      platforms = with platforms; linux ++ darwin;
+      platforms = with platforms; linux;
       maintainers = [
         {
           name = "Sokhibjon Orzikulov";
@@ -63,6 +63,7 @@ in
             }
           ];
         }
+        # TODO: Shakhzod
       ];
     };
   }
