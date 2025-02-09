@@ -11,11 +11,21 @@ in
     };
 
     nativeBuildInputs = with pkgs; [
-      # autoPatchelfHook
       dpkg
+      glibc
+      patchelf
+      autoPatchelfHook
     ];
 
-    unpackPhase = "true";
+    unpackPhase = ''
+      # Unpack .deb
+      mkdir -p $out
+      dpkg -x $src $out
+
+      # Garbage
+      rm -rf $out/lib/*
+      cp -r $out/usr/lib/*.so $out/lib/
+    '';
 
     buildInputs = with pkgs; [
       libgcc
@@ -31,8 +41,10 @@ in
     ];
 
     installPhase = ''
-      mkdir -p $out $out/bin
-      dpkg -x $src $out
+      echo $unpackPhase
+      runHook preInstall
+      install -m755 -D $out/usr/bin/kvpncsvc $out/bin/kvpncsvc
+      runHook postInstall
     '';
 
     meta = with lib; {

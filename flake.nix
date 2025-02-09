@@ -2,11 +2,12 @@
   description = "Kerio Control VPN Client (Linux x86_64 only)";
 
   inputs = {
-    # Too old to work with most libraries
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    # Good for now!
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
 
-    # Perfect!
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    # Optimized best for 24.11
+    # Unstable only when maintainer is suicidal
+    # nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
     # The flake-utils library
     flake-utils.url = "github:numtide/flake-utils";
@@ -19,10 +20,8 @@
     ...
   }:
     flake-utils.lib.eachSystem [
-      "x86_64-linux" # For production
-      "aarch64-darwin" # For maintainer's development
-    ]
-    (
+      "x86_64-linux"
+    ] (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
       in {
