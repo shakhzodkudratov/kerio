@@ -38,6 +38,6 @@
     )
     // {
       # Overlay module
-      # nixosModules.e-imzo = import ./module.nix self;
+      # nixosModules.kerio = import ./module.nix self;
     };
 }
