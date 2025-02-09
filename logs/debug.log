@@ -1,0 +1,5 @@
+[10/Feb/2025 04:34:17] {info} Kerio Control VPN Client Service 9.4.5 build 8629 started.
+[10/Feb/2025 04:34:22] {vpnCore} oldapi: KVpnInit() - ERROR
+[10/Feb/2025 04:34:22] {vpnCore} oldapi: KVpnStatusString()
+[10/Feb/2025 04:34:22] {engine} VpnFSM: GetStatus().
+[10/Feb/2025 04:34:22] {info} Kerio Control VPN Client Service 9.4.5 build 8629 stopped.

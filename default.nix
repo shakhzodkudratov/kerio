@@ -24,15 +24,13 @@ in
 
       # Garbage
       rm -rf $out/lib/*
-      cp -r $out/usr/lib/*.so $out/lib/
+      cp -r $out/usr/lib/* $out/lib/
     '';
 
     buildInputs = with pkgs; [
       libgcc
       stdenv.cc.cc.lib
-
       curl
-
       procps
       dialog
       util-linux
@@ -43,7 +41,7 @@ in
     installPhase = ''
       echo $unpackPhase
       runHook preInstall
-      install -m755 -D $out/usr/bin/kvpncsvc $out/bin/kvpncsvc
+      install -m755 -D $out/usr/sbin/kvpncsvc $out/bin/kvpncsvc
       runHook postInstall
     '';
 
