@@ -23,9 +23,13 @@ in
       dpkg -x $src $out
 
       # Follow nix way
-      cp -r $out/usr/lib/* $out/lib/  # LD libraries
-      cp -r $out/usr/sbin/* $out/bin/ # Binaries / executables
-      rm -rf $out/usr                 # Deleting garbages
+      cp -r $out/usr/lib/* $out/lib/
+      cp -r $out/usr/sbin/* $out/bin/
+
+      # Deleting garbages
+      rm -rf $out/usr
+      rm -rf $out/etc
+      rm -rf $out/etc/systemd
     '';
 
     buildInputs = with pkgs; [
