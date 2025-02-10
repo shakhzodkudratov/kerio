@@ -19,12 +19,13 @@ in
 
     unpackPhase = ''
       # Unpack .deb
-      mkdir -p $out
+      mkdir -p $out $out/bin
       dpkg -x $src $out
 
-      # Garbage
-      rm -rf $out/lib/*
-      cp -r $out/usr/lib/* $out/lib/
+      # Follow nix way
+      cp -r $out/usr/lib/* $out/lib/  # LD libraries
+      cp -r $out/usr/sbin/* $out/bin/ # Binaries / executables
+      rm -rf $out/usr                 # Deleting garbages
     '';
 
     buildInputs = with pkgs; [

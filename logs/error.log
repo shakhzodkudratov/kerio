@@ -1,3 +1,0 @@
-[10/Feb/2025 04:34:22] vpncore: Unable to initialize vpn core: unable to open VPN driver
-[10/Feb/2025 04:34:22] vpnMain: Unable to open VPN driver: Unknown error
-[10/Feb/2025 04:34:22] VpnFSM: Failed to initialize VPN driver (99).
