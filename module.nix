@@ -5,40 +5,41 @@ flake: {
   ...
 }: let
   # Shortcuts
-  cfg = config.services.e-imzo;
+  cfg = config.services.kerio-kvc;
   pkg = flake.packages.${pkgs.stdenv.hostPlatform.system}.default;
-
-  args = {cfg}: let
-    id =
-      if cfg.id-card
-      then "--id-card"
-      else "";
-  in
-    lib.strings.concatStringsSep " " [id];
 
   # Systemd service
   service = lib.mkIf cfg.enable {
     users.users.${cfg.user} = {
-      description = "E-IMZO service daemon user";
+      description = "Kerio control daemon user";
       isSystemUser = true;
       group = cfg.group;
     };
 
     users.groups.${cfg.group} = {};
 
-    systemd.services.e-imzo = {
-      description = "E-IMZO, uzbek state web signing service";
-      documentation = ["https://github.com/xinux-org/e-imzo"];
+    systemd.services.kerio-kvc = {
+      description = "Kerio Control VPN Client";
+      documentation = ["https://github.com/xinux-org/kerio"];
 
       after = ["network-online.target"];
       wants = ["network-online.target"];
       wantedBy = ["multi-user.target"];
 
+      aliases = [
+        "kerio-vpn"
+        "kerio-control-vpn"
+        "kerio-control-vpnclient"
+      ];
+
       serviceConfig = {
+        Type = "forking";
         User = cfg.user;
         Group = cfg.group;
         Restart = "always";
-        ExecStart = "${lib.getBin cfg.package}/bin/e-imzo ${args {inherit cfg;}}";
+        RestartSec = 5;
+        ExecStart = "${lib.getBin cfg.package}/bin/kvpncsvc /var/lib/${cfg.user} 2>&1 | logger -p daemon.err -t kerio-control-vpnclient 2>/dev/null";
+        ExecReload = "pkill -SIGHUP kvpncsvc";
         StateDirectory = cfg.user;
         StateDirectoryMode = "0750";
 
@@ -52,7 +53,6 @@ flake: {
         DevicePolicy = "strict";
         IPAddressAllow = "localhost";
         LockPersonality = true;
-        # MemoryDenyWriteExecute = true;
         NoNewPrivileges = true;
         PrivateDevices = true;
         PrivateTmp = true;
@@ -95,13 +95,13 @@ in {
 
       user = mkOption {
         type = types.str;
-        default = "kerio";
+        default = "kerio-control-vpn";
         description = "User for running service + accessing keys";
       };
 
       group = mkOption {
         type = types.str;
-        default = "kerio";
+        default = "kerio-control-vpn";
         description = "Group for running service + accessing keys";
       };
 
