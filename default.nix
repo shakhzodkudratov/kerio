@@ -42,7 +42,6 @@ in
     installPhase = ''
       echo $unpackPhase
       runHook preInstall
-      install -m755 -D $out/usr/sbin/kvpncsvc $out/bin/kvpncsvc
       runHook postInstall
     '';
 
