@@ -29,7 +29,7 @@ in
       # Deleting garbages
       rm -rf $out/usr
       rm -rf $out/etc
-      rm -rf $out/etc/systemd
+      rm -rf $out/lib/systemd
     '';
 
     buildInputs = with pkgs; [
