@@ -118,8 +118,8 @@ flake: {
             echo "Error: Failed to fetch fingerprint!" >&2
             exit 1
           fi
-        elif [ -f "${cfg.config.fingerprint.fingerprint}" ]; then
-          FINGERPRINT=$(cat ${cfg.config.fingerprint.fingerprint})
+        elif [ -f "${cfg.config.fingerprint.data or "/dev/null"}" ]; then
+          FINGERPRINT=$(cat ${cfg.config.fingerprint.data or "/dev/null"})
         fi
 
         cat > ${file} << EOF
@@ -182,7 +182,7 @@ in {
             Automatically detect the fingerprint from server or enter manually.
           '';
 
-          fingerprint = mkOption {
+          data = mkOption {
             type = with types; nullOr path;
             default = null;
             description = lib.mdDoc ''
