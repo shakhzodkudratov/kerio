@@ -41,9 +41,9 @@ flake: {
       wantedBy = ["multi-user.target"];
 
       aliases = [
-        "kerio-vpn"
-        "kerio-control-vpn"
-        "kerio-control-vpnclient"
+        "kerio-vpn.service"
+        "kerio-control-vpn.service"
+        "kerio-control-vpnclient.service"
       ];
 
       serviceConfig = {
