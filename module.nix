@@ -43,7 +43,7 @@ flake: {
 
           # Auto-detect fingerprint if enabled
           FINGERPRINT=""
-          if [ "${toString cfg.config.fingerprint.auto}" == "true" ]; then
+          if [ "${toString cfg.config.fingerprint.auto}" == "1" ]; then
             echo "Fetching fingerprint from ${cfg.config.domain}:${toString cfg.config.port}..."
             FINGERPRINT=$(echo | ${lib.getExe pkgs.openssl} s_client -connect "${cfg.config.domain}:${toString cfg.config.port}" 2>/dev/null | ${lib.getExe pkgs.openssl} x509 -fingerprint -md5 -noout | sed 's/.*=//')
 
