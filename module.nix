@@ -118,7 +118,7 @@ flake: {
             echo "Error: Failed to fetch fingerprint!" >&2
             exit 1
           fi
-        elif [ -f "${cfg.config.fingerprint.data or "/dev/null"}" ]; then
+        elif [ -f "${lib.optionalString cfg.config.fingerprint.data}" ]; then
           FINGERPRINT=$(cat ${cfg.config.fingerprint.data or "/dev/null"})
         fi
 
