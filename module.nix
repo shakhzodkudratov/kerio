@@ -7,6 +7,15 @@ flake: {
   # Shortcuts
   cfg = config.services.kerio-kvc;
   pkg = flake.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  file = "/etc/kerio-kvc.conf";
+
+  # Password XOR generator
+  xor = password: ''
+    XOR=""
+    for i in `echo -n "$password" | od -t d1 -A n`; do
+      XOR=$(printf "%s%02x" "$XOR" $((i ^ 85)))
+    done
+  '';
 
   # Systemd service
   service = lib.mkIf cfg.enable {
@@ -51,10 +60,8 @@ flake: {
         ];
         DeviceAllow = ["/dev/stdin r"];
         DevicePolicy = "strict";
-        IPAddressAllow = "localhost";
         LockPersonality = true;
         NoNewPrivileges = true;
-        PrivateDevices = true;
         PrivateTmp = true;
         PrivateUsers = true;
         ProtectClock = true;
@@ -65,7 +72,6 @@ flake: {
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
         ProtectSystem = "strict";
-        ReadOnlyPaths = ["/"];
         RemoveIPC = true;
         RestrictAddressFamilies = [
           "AF_NETLINK"
@@ -84,6 +90,29 @@ flake: {
         ];
         UMask = "0027";
       };
+
+      # Pre-start script to generate config file
+      preStart = ''
+        PASSWORD=$(cat ${cfg.config.password})
+        ${xor "$PASSWORD"}
+
+        cat > ${file} << EOF
+        <config>
+          <connections>
+            <connection type="persistent">
+              <server>${cfg.config.domain}</server>
+              <port>${toString cfg.config.port}</port>
+              <username>${cfg.config.user}</username>
+              <password>XOR:$XOR</password>
+              <fingerprint>${optionalString (cfg.config.fingerprint.fingerprint != null) cfg.config.fingerprint.fingerprint}</fingerprint>
+              <active>1</active>
+            </connection>
+          </connections>
+        </config>
+        EOF
+
+        chmod 0600 ${file}
+      '';
     };
   };
 in {
@@ -92,6 +121,50 @@ in {
       enable = mkEnableOption ''
         Enable Kerio Control VPN service.
       '';
+
+      config = {
+        domain = mkOption {
+          type = types.str;
+          default = "192.168.0.1";
+          example = "uic-gw.example.uz";
+          description = "Domain or IP address of Kerio Control VPN server";
+        };
+
+        port = mkOption {
+          type = types.int;
+          default = 4090;
+          description = "Port to Kerio Control VPN server";
+        };
+
+        user = mkOption {
+          type = types.str;
+          default = "example";
+          example = "example";
+          description = "Domain or IP address of Kerio Control VPN server";
+        };
+
+        password = mkOption {
+          type = with types; nullOr path;
+          default = null;
+          description = lib.mdDoc ''
+            Path to password file of Kerio Control VPN user.
+          '';
+        };
+
+        fingerprint = {
+          auto = mkEnableOption ''
+            Automatically detect the fingerprint from server or enter manually.
+          '';
+
+          fingerprint = mkOption {
+            type = with types; nullOr path;
+            default = null;
+            description = lib.mdDoc ''
+              Path to server provided fingerprint.
+            '';
+          };
+        };
+      };
 
       user = mkOption {
         type = types.str;
