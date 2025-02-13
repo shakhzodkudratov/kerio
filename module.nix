@@ -27,10 +27,10 @@ flake: {
 
     users.groups.${cfg.group} = {};
 
-    environment.etc.${file} = {
-      mode = "0600";
-      user = cfg.user;
-    };
+    # environment.etc.${file} = {
+    #   mode = "0600";
+    #   user = cfg.user;
+    # };
 
     systemd.services.kerio-kvc = {
       description = "Kerio Control VPN Client";
