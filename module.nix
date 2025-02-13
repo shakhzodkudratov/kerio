@@ -27,6 +27,11 @@ flake: {
 
     users.groups.${cfg.group} = {};
 
+    environment.etc.${file} = {
+      mode = "0600";
+      user = cfg.user;
+    };
+
     systemd.services.kerio-kvc = {
       description = "Kerio Control VPN Client";
       documentation = ["https://github.com/xinux-org/kerio"];
@@ -71,7 +76,7 @@ flake: {
         ProtectKernelLogs = true;
         ProtectKernelModules = true;
         ProtectKernelTunables = true;
-        ProtectSystem = "strict";
+        ProtectSystem = "full";
         RemoveIPC = true;
         RestrictAddressFamilies = [
           "AF_NETLINK"
@@ -93,8 +98,29 @@ flake: {
 
       # Pre-start script to generate config file
       preStart = ''
-        PASSWORD=$(cat ${cfg.config.password})
-        ${xor "$PASSWORD"}
+        PASSWORD=""
+        if [ -f "${cfg.config.password}" ]; then
+          PASSWORD=$(cat ${cfg.config.password})
+        fi
+
+        XOR=""
+        if [ -n "$PASSWORD" ]; then
+          ${xor "$PASSWORD"}
+        fi
+
+        # Auto-detect fingerprint if enabled
+        FINGERPRINT=""
+        if [ "${toString cfg.config.fingerprint.auto}" == "true" ]; then
+          echo "Fetching fingerprint from ${cfg.config.domain}:${toString cfg.config.port}..."
+          FINGERPRINT=$(echo | openssl s_client -connect "${cfg.config.domain}:${toString cfg.config.port}" 2>/dev/null | openssl x509 -fingerprint -md5 -noout | sed 's/.*=//')
+
+          if [ -z "$FINGERPRINT" ]; then
+            echo "Error: Failed to fetch fingerprint!" >&2
+            exit 1
+          fi
+        elif [ -f "${cfg.config.fingerprint.fingerprint}" ]; then
+          FINGERPRINT=$(cat ${cfg.config.fingerprint.fingerprint})
+        fi
 
         cat > ${file} << EOF
         <config>
@@ -104,7 +130,7 @@ flake: {
               <port>${toString cfg.config.port}</port>
               <username>${cfg.config.user}</username>
               <password>XOR:$XOR</password>
-              <fingerprint>${optionalString (cfg.config.fingerprint.fingerprint != null) cfg.config.fingerprint.fingerprint}</fingerprint>
+              <fingerprint>$FINGERPRINT</fingerprint>
               <active>1</active>
             </connection>
           </connections>
