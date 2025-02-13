@@ -120,12 +120,12 @@ flake: {
           fi
         elif [ -f "${
           if cfg.config.fingerprint.data == null
-          then cfg.config.fingerprint.data
+          then toString ${cfg.config.fingerprint.data}
           else "/dev/null"
         }" ]; then
           FINGERPRINT=$(cat ${
           if cfg.config.fingerprint.data == null
-          then cfg.config.fingerprint.data
+          then toString ${cfg.config.fingerprint.data}
           else "/dev/null"
         })
         fi
