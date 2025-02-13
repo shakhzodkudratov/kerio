@@ -27,7 +27,7 @@ flake: {
 
     users.groups.${cfg.group} = {};
 
-    systemd.services.kerio-config = {
+    systemd.services.kerio-cfg = {
       description = "Kerio Control VPN Client Config Generator";
       documentation = ["https://github.com/xinux-org/kerio"];
 
@@ -36,7 +36,7 @@ flake: {
 
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = ''
+        ExecStart = pkgs.writeShellScript "kerio-cfg" ''
           PASSWORD=""
           if [ -f "${cfg.config.password}" ]; then
             PASSWORD=$(cat ${cfg.config.password})
