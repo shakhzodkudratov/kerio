@@ -106,52 +106,14 @@ flake: {
 
       serviceConfig = {
         Type = "forking";
-        User = cfg.user;
-        Group = cfg.group;
+        User = "root";
+        Group = "root";
         Restart = "always";
         RestartSec = 5;
         ExecStart = "${lib.getBin cfg.package}/bin/kvpncsvc /var/lib/${cfg.user} 2>&1 | logger -p daemon.err -t kerio-control-vpnclient 2>/dev/null";
         ExecReload = "pkill -SIGHUP kvpncsvc";
         StateDirectory = cfg.user;
         StateDirectoryMode = "0750";
-
-        # Hardening
-        CapabilityBoundingSet = [
-          "AF_NETLINK"
-          "AF_INET"
-          "AF_INET6"
-        ];
-        DeviceAllow = ["/dev/stdin r"];
-        DevicePolicy = "strict";
-        LockPersonality = true;
-        NoNewPrivileges = true;
-        PrivateTmp = true;
-        PrivateUsers = true;
-        ProtectClock = true;
-        ProtectControlGroups = true;
-        ProtectHome = true;
-        ProtectHostname = true;
-        ProtectKernelLogs = true;
-        ProtectKernelModules = true;
-        ProtectKernelTunables = true;
-        ProtectSystem = "full";
-        RemoveIPC = true;
-        RestrictAddressFamilies = [
-          "AF_NETLINK"
-          "AF_INET"
-          "AF_INET6"
-        ];
-        RestrictNamespaces = true;
-        RestrictRealtime = true;
-        RestrictSUIDSGID = true;
-        SystemCallArchitectures = "native";
-        SystemCallFilter = [
-          "@system-service"
-          "~@privileged"
-          "~@resources"
-          "@pkey"
-        ];
-        UMask = "0027";
       };
     };
   };
