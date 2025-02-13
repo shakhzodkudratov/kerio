@@ -9,14 +9,6 @@ flake: {
   pkg = flake.packages.${pkgs.stdenv.hostPlatform.system}.default;
   file = "/etc/kerio-kvc.conf";
 
-  # Password XOR generator
-  xor = password: ''
-    XOR=""
-    for i in `echo -n "$password" | od -t d1 -A n`; do
-      XOR=$(printf "%s%02x" "$XOR" $((i ^ 85)))
-    done
-  '';
-
   # Systemd service
   service = lib.mkIf cfg.enable {
     users.users.${cfg.user} = {
@@ -44,7 +36,9 @@ flake: {
 
           XOR=""
           if [ -n "$PASSWORD" ]; then
-            ${xor "$PASSWORD"}
+            for i in `echo -n "$PASSWORD" | od -t d1 -A n`; do
+              XOR=$(printf "%s%02x" "$XOR" $((i ^ 85)))
+            done
           fi
 
           # Auto-detect fingerprint if enabled
