@@ -45,19 +45,19 @@ flake: {
           FINGERPRINT=""
           if [ "${toString cfg.config.fingerprint.auto}" == "true" ]; then
             echo "Fetching fingerprint from ${cfg.config.domain}:${toString cfg.config.port}..."
-            FINGERPRINT=$(echo | openssl s_client -connect "${cfg.config.domain}:${toString cfg.config.port}" 2>/dev/null | openssl x509 -fingerprint -md5 -noout | sed 's/.*=//')
+            FINGERPRINT=$(echo | ${lib.getExe pkgs.openssl} s_client -connect "${cfg.config.domain}:${toString cfg.config.port}" 2>/dev/null | ${lib.getExe pkgs.openssl} x509 -fingerprint -md5 -noout | sed 's/.*=//')
 
             if [ -z "$FINGERPRINT" ]; then
               echo "Error: Failed to fetch fingerprint!" >&2
               exit 1
             fi
           elif [ -f "${
-            if cfg.config.fingerprint.data == null
+            if cfg.config.fingerprint.data != null
             then toString cfg.config.fingerprint.data
             else "/dev/null"
           }" ]; then
             FINGERPRINT=$(cat ${
-            if cfg.config.fingerprint.data == null
+            if cfg.config.fingerprint.data != null
             then toString cfg.config.fingerprint.data
             else "/dev/null"
           })
