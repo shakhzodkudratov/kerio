@@ -27,17 +27,81 @@ flake: {
 
     users.groups.${cfg.group} = {};
 
-    # environment.etc.${file} = {
-    #   mode = "0600";
-    #   user = cfg.user;
-    # };
+    systemd.services.kerio-config = {
+      description = "Kerio Control VPN Client Config Generator";
+      documentation = ["https://github.com/xinux-org/kerio"];
+
+      after = ["network-online.target"];
+      wants = ["network-online.target"];
+
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = ''
+          PASSWORD=""
+          if [ -f "${cfg.config.password}" ]; then
+            PASSWORD=$(cat ${cfg.config.password})
+          fi
+
+          XOR=""
+          if [ -n "$PASSWORD" ]; then
+            ${xor "$PASSWORD"}
+          fi
+
+          # Auto-detect fingerprint if enabled
+          FINGERPRINT=""
+          if [ "${toString cfg.config.fingerprint.auto}" == "true" ]; then
+            echo "Fetching fingerprint from ${cfg.config.domain}:${toString cfg.config.port}..."
+            FINGERPRINT=$(echo | openssl s_client -connect "${cfg.config.domain}:${toString cfg.config.port}" 2>/dev/null | openssl x509 -fingerprint -md5 -noout | sed 's/.*=//')
+
+            if [ -z "$FINGERPRINT" ]; then
+              echo "Error: Failed to fetch fingerprint!" >&2
+              exit 1
+            fi
+          elif [ -f "${
+            if cfg.config.fingerprint.data == null
+            then toString cfg.config.fingerprint.data
+            else "/dev/null"
+          }" ]; then
+            FINGERPRINT=$(cat ${
+            if cfg.config.fingerprint.data == null
+            then toString cfg.config.fingerprint.data
+            else "/dev/null"
+          })
+          fi
+
+          cat > ${file} << EOF
+          <config>
+            <connections>
+              <connection type="persistent">
+                <server>${cfg.config.domain}</server>
+                <port>${toString cfg.config.port}</port>
+                <username>${cfg.config.user}</username>
+                <password>XOR:$XOR</password>
+                <fingerprint>$FINGERPRINT</fingerprint>
+                <active>1</active>
+              </connection>
+            </connections>
+          </config>
+          EOF
+
+          # Ensure the file has proper ownership and permissions
+          chown ${cfg.user}:${cfg.group} ${file}
+          chmod 0600 ${file}
+        '';
+        User = "root";
+        Group = "root";
+        RemainAfterExit = true;
+      };
+
+      wantedBy = ["multi-user.target"];
+    };
 
     systemd.services.kerio-kvc = {
       description = "Kerio Control VPN Client";
       documentation = ["https://github.com/xinux-org/kerio"];
 
-      after = ["network-online.target"];
-      wants = ["network-online.target"];
+      after = ["network-online.target" "kerio-cfg.service"];
+      wants = ["network-online.target" "kerio-cfg.service"];
       wantedBy = ["multi-user.target"];
 
       aliases = [
@@ -95,58 +159,6 @@ flake: {
         ];
         UMask = "0027";
       };
-
-      # Pre-start script to generate config file
-      preStart = ''
-        PASSWORD=""
-        if [ -f "${cfg.config.password}" ]; then
-          PASSWORD=$(cat ${cfg.config.password})
-        fi
-
-        XOR=""
-        if [ -n "$PASSWORD" ]; then
-          ${xor "$PASSWORD"}
-        fi
-
-        # Auto-detect fingerprint if enabled
-        FINGERPRINT=""
-        if [ "${toString cfg.config.fingerprint.auto}" == "true" ]; then
-          echo "Fetching fingerprint from ${cfg.config.domain}:${toString cfg.config.port}..."
-          FINGERPRINT=$(echo | openssl s_client -connect "${cfg.config.domain}:${toString cfg.config.port}" 2>/dev/null | openssl x509 -fingerprint -md5 -noout | sed 's/.*=//')
-
-          if [ -z "$FINGERPRINT" ]; then
-            echo "Error: Failed to fetch fingerprint!" >&2
-            exit 1
-          fi
-        elif [ -f "${
-          if cfg.config.fingerprint.data == null
-          then toString cfg.config.fingerprint.data
-          else "/dev/null"
-        }" ]; then
-          FINGERPRINT=$(cat ${
-          if cfg.config.fingerprint.data == null
-          then toString cfg.config.fingerprint.data
-          else "/dev/null"
-        })
-        fi
-
-        cat > ${file} << EOF
-        <config>
-          <connections>
-            <connection type="persistent">
-              <server>${cfg.config.domain}</server>
-              <port>${toString cfg.config.port}</port>
-              <username>${cfg.config.user}</username>
-              <password>XOR:$XOR</password>
-              <fingerprint>$FINGERPRINT</fingerprint>
-              <active>1</active>
-            </connection>
-          </connections>
-        </config>
-        EOF
-
-        chmod 0600 ${file}
-      '';
     };
   };
 in {
