@@ -16,7 +16,7 @@
 This is Uzbek Xinux community (nix users mostly) member's effort on packaging & patching Kerio Control VPN & providing ready to use modules for NixOS users.
 
 > [!NOTE]
-> This package is currently ongoing heavy development due to incompatibility with the Linux distribution (as we speaking, @shakhzodkudratov is waiting for an email from Kerio on the issue).
+> This package is currently ongoing heavy development due to incompatibility with the Linux distribution (as we speaking, [@shakhzodkudratov](https://github.com/shakhzodkudratov) is waiting for an email from Kerio on the issue).
 
 ## Guides & Use
 
